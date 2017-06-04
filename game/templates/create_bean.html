@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+{% block header%} Create Bean {%endblock%}
+
+{% block content%}
+    <form class="" action="{%url 'create_bean' %}" method="post">
+      {% csrf_token %}
+      {{form|crispy}}
+      <input type="submit" value="Create Bean">
+    </form>
+{% endblock%}
