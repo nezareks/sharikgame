@@ -1,8 +1,18 @@
 from django.shortcuts import render, redirect
 from .forms import *
+import datetime
 
 def home(request):
-    return render(request, 'home.html', {})
+    context = {}
+    user = request.user
+    context['user']= user
+    today = datetime.date.today()
+    context['today']=today
+    coffee_list = Coffee.objects.filter(user=user)
+    context['coffee_list']=coffee_list
+    order_list = Order.objects.filter(user=user, date=today)
+    context['order_list']=order_list
+    return render(request, 'home.html', context)
 
 def create_coffee(request):
     context = {}
@@ -218,6 +228,7 @@ def create_order(request, coffee_id):
             order.coffee = coffee
             order.save()
             return redirect("home")
+
         else:
             return render(request, 'create_order.html', context)
     else:
