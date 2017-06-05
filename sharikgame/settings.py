@@ -26,7 +26,11 @@ SECRET_KEY = ')r%ce85(oau(e&l6l-l2brqtzp&lhkn7+x#_eqb)$8un7kij!a'
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+EMAIL_USE_TLS=True
+EMAIL_HOST='smtp.gmail.com'
+EMAIL_HOST_USER= ''
+EMAIL_HOST_PASSWORD= ""
+EMAIL_PORT= 587
 
 # Application definition
 
