@@ -5,9 +5,13 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.models import User
 
+def no_access(request):
+    return render(request, 'no_access.html', {})
 
 def home(request):
     context = {}
+    if not request.user.is_authenticated():
+        return redirect("github_login")
     user = request.user
     context['user']= user
     if request.method=="POST":
@@ -31,7 +35,8 @@ def home(request):
 
 def create_coffee(request):
     context = {}
-
+    if not request.user.is_authenticated():
+        return redirect("github_login")
     if request.method == "POST":
         form = CoffeeForm(request.POST)
         context['form'] = form
@@ -50,8 +55,14 @@ def create_coffee(request):
 
 def edit_coffee(request, coffee_id):
     context = {}
+    if not request.user.is_authenticated():
+        return redirect("github_login")
+
     coff = Coffee.objects.get(id=coffee_id)
     context['coffee'] = coff
+
+    if not (request.user == coff.user or request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
 
     if request.method == "POST":
         form = CoffeeForm(request.POST, instance=coff)
@@ -70,12 +81,19 @@ def edit_coffee(request, coffee_id):
         return render(request, 'edit_coffee.html', context)
 
 def delete_coffee(request, coffee_id):
-    Coffee.objects.get(id=coffee_id).delete()
+    if not request.user.is_authenticated():
+        return redirect("github_login")
+    coffee = Coffee.objects.get(id=coffee_id).delete()
+
+    if not (request.user == coffee.user or request.user.is_superuser or request.user.is_staff):
+            return redirect("no_access")
+    coffee.delete()
     return redirect("home")
 
 def create_bean(request):
     context = {}
-
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     if request.method == "POST":
         form = BeanForm(request.POST)
         context['form'] = form
@@ -92,6 +110,8 @@ def create_bean(request):
 
 def edit_bean(request, bean_id):
     context = {}
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     bean = Bean.objects.get(id=bean_id)
     context['bean']=bean
     if request.method == "POST":
@@ -109,13 +129,16 @@ def edit_bean(request, bean_id):
 
 
 def delete_bean(request, bean_id):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     Bean.objects.get(id=bean_id).delete()
     return redirect("home")
 
 
 def create_roast(request):
     context = {}
-
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     if request.method == "POST":
         form = RoastForm(request.POST)
         context['form'] = form
@@ -132,6 +155,8 @@ def create_roast(request):
 
 def edit_roast(request, roast_id):
     context = {}
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     roast = Roast.objects.get(id=roast_id)
     context['roast']=roast
     if request.method == "POST":
@@ -149,12 +174,15 @@ def edit_roast(request, roast_id):
 
 
 def delete_roast(request, roast_id):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     Roast.objects.get(id=roast_id).delete()
     return redirect("home")
 
 def create_powder(request):
     context = {}
-
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     if request.method == "POST":
         form = PowderForm(request.POST)
         context['form'] = form
@@ -171,6 +199,8 @@ def create_powder(request):
 
 def edit_powder(request, powder_id):
     context = {}
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     powder = Powder.objects.get(id=powder_id)
     context['powder']=powder
     if request.method == "POST":
@@ -188,12 +218,15 @@ def edit_powder(request, powder_id):
 
 
 def delete_powder(request, powder_id):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     Powder.objects.get(id=powder_id).delete()
     return redirect("home")
 
 def create_syrup(request):
     context = {}
-
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     if request.method == "POST":
         form = SyrupForm(request.POST)
         context['form'] = form
@@ -210,6 +243,8 @@ def create_syrup(request):
 
 def edit_syrup(request, syrup_id):
     context = {}
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     syrup = Syrup.objects.get(id=syrup_id)
     context['syrup']=syrup
     if request.method == "POST":
@@ -227,11 +262,15 @@ def edit_syrup(request, syrup_id):
 
 
 def delete_syrup(request, syrup_id):
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     Syrup.objects.get(id=syrup_id).delete()
     return redirect("home")
 
 def create_order(request, coffee_id):
     context = {}
+    if not request.user.is_authenticated():
+        return redirect("github_login")
     coffee = Coffee.objects.get(id=coffee_id)
     context['coffee'] = coffee
     if request.method == "POST":
@@ -253,6 +292,8 @@ def create_order(request, coffee_id):
 
 def place_order(request, year, month, day):
     context = {}
+    if not request.user.is_authenticated():
+        return redirect("github_login")
     date = datetime.datetime.strptime('%s%s%s'%(year, month, day), "%Y%m%d").date()
     order_list=Order.objects.filter(user=request.user, date=date)
     subject = "My Coffee Orders"
@@ -264,6 +305,8 @@ def place_order(request, year, month, day):
 
 def replicate_order(request, year, month, day):
     context = {}
+    if not request.user.is_authenticated():
+        return redirect("github_login")
     date = datetime.datetime.strptime('%s%s%s'%(year, month, day), "%Y%m%d").date()
     context['date']=date
     if request.method == "POST":
@@ -282,12 +325,16 @@ def replicate_order(request, year, month, day):
 
 def user_list(request):
     context={}
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     users = User.objects.all()
     context['users']=users
     return render(request, 'user_list.html', context)
 
 def user_coffees(request, user_id):
     context={}
+    if not (request.user.is_superuser or request.user.is_staff):
+        return redirect("no_access")
     user= User.objects.get(id=user_id)
     coffee_list = Coffee.objects.filter(user=user)
     context['user']=user
